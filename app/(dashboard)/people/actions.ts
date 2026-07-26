@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { withSaved } from "@/lib/flash";
 import { emptyToNull, interactionSchema, personSchema } from "@/lib/validators";
 import { parsePeopleCsv } from "@/lib/csv";
 
@@ -34,7 +35,7 @@ export async function createPerson(formData: FormData) {
   });
 
   revalidatePath("/people");
-  redirect(`/people/${person.id}`);
+  redirect(withSaved(`/people/${person.id}`));
 }
 
 export async function updatePerson(id: string, formData: FormData) {
@@ -68,7 +69,7 @@ export async function updatePerson(id: string, formData: FormData) {
   revalidatePath(`/people/${id}`);
   revalidatePath("/people");
   revalidatePath("/home");
-  redirect(`/people/${id}`);
+  redirect(withSaved(`/people/${id}`));
 }
 
 export async function logInteraction(formData: FormData) {
@@ -109,6 +110,14 @@ export async function logInteraction(formData: FormData) {
     revalidatePath(`/opportunities/${parsed.opportunityId}`);
   }
   revalidatePath("/home");
+
+  if (parsed.personId) {
+    redirect(withSaved(`/people/${parsed.personId}`));
+  }
+  if (parsed.opportunityId) {
+    redirect(withSaved(`/opportunities/${parsed.opportunityId}`));
+  }
+  redirect(withSaved("/home"));
 }
 
 export async function importPeopleCsv(formData: FormData) {

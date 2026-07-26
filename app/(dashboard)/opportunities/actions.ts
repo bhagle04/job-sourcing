@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { withSaved } from "@/lib/flash";
 import { emptyToNull, opportunitySchema } from "@/lib/validators";
 
 export async function createOpportunity(formData: FormData) {
@@ -39,7 +40,7 @@ export async function createOpportunity(formData: FormData) {
   });
 
   revalidatePath("/opportunities");
-  redirect(`/opportunities/${opportunity.id}`);
+  redirect(withSaved(`/opportunities/${opportunity.id}`));
 }
 
 export async function updateOpportunity(id: string, formData: FormData) {
@@ -79,5 +80,5 @@ export async function updateOpportunity(id: string, formData: FormData) {
   revalidatePath(`/opportunities/${id}`);
   revalidatePath("/opportunities");
   revalidatePath("/home");
-  redirect(`/opportunities/${id}`);
+  redirect(withSaved(`/opportunities/${id}`));
 }

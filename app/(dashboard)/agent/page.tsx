@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { notifySaved } from "@/lib/flash";
 import { runAgentAction } from "./actions";
 import type { AgentToolName } from "@/lib/agent/tools";
 
@@ -53,6 +54,7 @@ export default function AgentPage() {
           startTransition(async () => {
             const result = await runAgentAction(formData);
             setOutput(JSON.stringify(result, null, 2));
+            notifySaved("Agent run complete");
           });
         }}
       >

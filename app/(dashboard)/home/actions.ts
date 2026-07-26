@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { withSaved } from "@/lib/flash";
 import { emptyToNull, parseSectors, profileSchema } from "@/lib/validators";
 
 export async function updateProfile(formData: FormData) {
@@ -42,6 +44,7 @@ export async function updateProfile(formData: FormData) {
 
   revalidatePath("/profile");
   revalidatePath("/agent");
+  redirect(withSaved("/profile"));
 }
 
 export async function dismissAlert(id: string) {
@@ -50,4 +53,5 @@ export async function dismissAlert(id: string) {
     data: { dismissedAt: new Date() },
   });
   revalidatePath("/home");
+  redirect(withSaved("/home"));
 }

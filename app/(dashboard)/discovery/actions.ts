@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { withSaved } from "@/lib/flash";
 import { recordNetworkSignal } from "@/lib/monitors/network";
 import { suggestStartups } from "@/lib/monitors/discovery";
 
@@ -18,12 +19,12 @@ export async function submitNetworkSignal(formData: FormData) {
   revalidatePath("/home");
   revalidatePath("/companies");
   revalidatePath("/people");
-  redirect("/home");
+  redirect(withSaved("/home"));
 }
 
 export async function runDiscovery(formData: FormData) {
   await suggestStartups(String(formData.get("query") || ""));
   revalidatePath("/home");
   revalidatePath("/companies");
-  redirect("/companies?source=suggested");
+  redirect(withSaved("/companies?source=suggested"));
 }

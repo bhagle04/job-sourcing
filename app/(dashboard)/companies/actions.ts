@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { parseCompaniesCsv } from "@/lib/csv";
+import { withSaved } from "@/lib/flash";
 import { companySchema, emptyToNull, parseSectors } from "@/lib/validators";
 
 export async function createCompany(formData: FormData) {
@@ -35,7 +36,7 @@ export async function createCompany(formData: FormData) {
   });
 
   revalidatePath("/companies");
-  redirect(`/companies/${company.id}`);
+  redirect(withSaved(`/companies/${company.id}`));
 }
 
 export async function updateCompany(id: string, formData: FormData) {
@@ -68,7 +69,7 @@ export async function updateCompany(id: string, formData: FormData) {
 
   revalidatePath(`/companies/${id}`);
   revalidatePath("/companies");
-  redirect(`/companies/${id}`);
+  redirect(withSaved(`/companies/${id}`));
 }
 
 export async function approveSuggestedCompany(id: string) {
@@ -86,7 +87,7 @@ export async function approveSuggestedCompany(id: string) {
   });
   revalidatePath("/companies");
   revalidatePath("/home");
-  redirect(`/companies/${id}`);
+  redirect(withSaved(`/companies/${id}`));
 }
 
 export async function rejectSuggestedCompany(id: string) {
@@ -100,6 +101,7 @@ export async function rejectSuggestedCompany(id: string) {
   });
   revalidatePath("/companies");
   revalidatePath("/home");
+  redirect(withSaved("/companies"));
 }
 
 export async function importCompaniesCsv(formData: FormData) {

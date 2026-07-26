@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { notifySaved } from "@/lib/flash";
 import { importPeopleCsv } from "../actions";
 
 export default function ImportPeoplePage() {
@@ -21,6 +22,7 @@ export default function ImportPeoplePage() {
           startTransition(async () => {
             const res = await importPeopleCsv(formData);
             setResult(res);
+            notifySaved(`Imported — created ${res.created}`);
           });
         }}
       >

@@ -238,3 +238,27 @@ textarea {
   border: 1px dashed var(--line);
   border-radius: 0.75rem;
 }
+
+.save-toast {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 50;
+  padding: 0.7rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 8px 24px rgba(28, 25, 20, 0.18);
+  animation: toast-in 180ms ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

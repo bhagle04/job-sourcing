@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { parseCompaniesCsv, parsePeopleCsv } from "@/lib/csv";
+import { withSaved } from "@/lib/flash";
 import { extractJobsFromCareersHtml } from "@/lib/monitors/careers";
+
+describe("withSaved", () => {
+  it("appends saved query and preserves existing params", () => {
+    expect(withSaved("/profile")).toBe("/profile?saved=Saved");
+    expect(withSaved("/companies?source=suggested")).toBe(
+      "/companies?source=suggested&saved=Saved",
+    );
+  });
+});
 
 describe("parsePeopleCsv", () => {
   it("parses valid rows and reports bad ones", () => {
