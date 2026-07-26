@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePeopleCsv } from "@/lib/csv";
+import { parseCompaniesCsv, parsePeopleCsv } from "@/lib/csv";
 import { extractJobsFromCareersHtml } from "@/lib/monitors/careers";
 
 describe("parsePeopleCsv", () => {
@@ -12,6 +12,30 @@ Alex Alumni,alex@example.com,Acme,know,Stanford
     expect(result.rows[0].name).toBe("Alex Alumni");
     expect(result.rows[0].relationshipStrength).toBe("know");
     expect(result.errors.length).toBeGreaterThan(0);
+  });
+});
+
+describe("parseCompaniesCsv", () => {
+  it("parses aliases, splits sectors, defaults status", () => {
+    const csv = `company,stage,sector,website,careers,why,status
+Acme Robotics,Series A,"hard-tech, AI",https://acme.com,https://acme.com/jobs,Cool mech,active
+`;
+    const result = parseCompaniesCsv(csv);
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0].name).toBe("Acme Robotics");
+    expect(result.rows[0].sectors).toEqual(["hard-tech", "AI"]);
+    expect(result.rows[0].websiteUrl).toBe("https://acme.com");
+    expect(result.rows[0].careersUrl).toBe("https://acme.com/jobs");
+    expect(result.rows[0].status).toBe("active");
+  });
+
+  it("errors on missing name and invalid status", () => {
+    const csv = `name,status
+,watching
+Beta,nope`;
+    const result = parseCompaniesCsv(csv);
+    expect(result.rows).toHaveLength(0);
+    expect(result.errors.length).toBeGreaterThanOrEqual(2);
   });
 });
 
