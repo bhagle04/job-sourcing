@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CompanySource {
+  seeded
+  network
+  suggested
+}
+
+enum CompanyStatus {
+  watching
+  active
+  parked
+}
+
+enum RelationshipStrength {
+  know
+  warm
+  cold
+}
+
+enum OpportunityType {
+  job_post
+  intro_path
+  upcoming_hire
+  other
+}
+
+enum OpportunityStatus {
+  new
+  interested
+  applied
+  closed
+}
+
+enum InteractionChannel {
+  email
+  linkedin
+  call
+  other
+}
+
+enum InteractionDirection {
+  outbound
+  inbound
+  note
+}
+
+enum AlertType {
+  new_role
+  follow_up_due
+  funding
+  network_move
+  monitor_error
+  suggestion
+}
+
+model Company {
+  id             String        @id @default(cuid())
+  name           String
+  stage          String?
+  sectors        String[]      @default([])
+  careersUrl     String?
+  websiteUrl     String?
+  source         CompanySource @default(seeded)
+  status         CompanyStatus @default(watching)
+  whyInteresting String?
+  notes          String?
+  lastCheckedAt  DateTime?
+  monitorError   String?
+  approvedAt     DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  people         Person[]
+  opportunities  Opportunity[]
+  alerts         Alert[]
+
+  @@index([status])
+  @@index([name])
+}
+
+model Person {
+  id                   String               @id @default(cuid())
+  name                 String
+  email                String?
+  linkedinUrl          String?
+  currentTitle         String?
+  companyId            String?
+  company              Company?             @relation(fields: [companyId], references: [id])
+  relationshipStrength RelationshipStrength @default(cold)
+  hooks                String?
+  researchNotes        String?
+  lastContactAt        DateTime?
+  nextFollowUpAt       DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  interactions         Interaction[]
+  warmOpportunities    Opportunity[]        @relation("WarmPerson")
+  alerts               Alert[]
+
+  @@index([nextFollowUpAt])
+  @@index([relationshipStrength])
+}
+
+model Opportunity {
+  id                String            @id @default(cuid())
+  title             String
+  companyId         String
+  company           Company           @relation(fields: [companyId], references: [id])
+  url               String?
+  source            String?
+  type              OpportunityType   @default(job_post)
+  status            OpportunityStatus @default(new)
+  fitScore          Int?
+  whyFit            String?
+  talkingPoints     String?
+  questionsToAsk    String?
+  compensationNotes String?
+  warmPersonId      String?
+  warmPerson        Person?           @relation("WarmPerson", fields: [warmPersonId], references: [id])
+  externalId        String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  interactions      Interaction[]
+  alerts            Alert[]
+
+  @@unique([companyId, externalId])
+  @@index([status])
+}
+
+model Interaction {
+  id            String               @id @default(cuid())
+  personId      String?
+  person        Person?              @relation(fields: [personId], references: [id])
+  opportunityId String?
+  opportunity   Opportunity?         @relation(fields: [opportunityId], references: [id])
+  channel       InteractionChannel   @default(email)
+  direction     InteractionDirection @default(note)
+  summary       String
+  body          String?
+  occurredAt    DateTime             @default(now())
+  nextStep      String?
+  createdAt     DateTime             @default(now())
+
+  @@index([personId, occurredAt])
+}
+
+model Alert {
+  id            String       @id @default(cuid())
+  type          AlertType
+  title         String
+  body          String?
+  companyId     String?
+  company       Company?     @relation(fields: [companyId], references: [id])
+  personId      String?
+  person        Person?      @relation(fields: [personId], references: [id])
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id])
+  createdAt     DateTime     @default(now())
+  dismissedAt   DateTime?
+
+  @@index([dismissedAt, createdAt])
+}
+
+model Profile {
+  id                String   @id @default(cuid())
+  backgroundSummary String
+  targetSectors     String[] @default([])
+  thesis            String?
+  targetCompMin     Int?
+  targetCompMax     Int?
+  voiceSamples      String?
+  updatedAt         DateTime @updatedAt
+}
