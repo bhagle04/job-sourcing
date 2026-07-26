@@ -25,9 +25,14 @@ export default async function CompaniesPage({
           <h1 className="page-title">Companies</h1>
           <p className="page-subtitle">Watchlist of startups, VC firms, and target teams.</p>
         </div>
-        <Link className="btn" href="/companies/new">
-          Add company
-        </Link>
+        <div className="row-actions">
+          <Link className="btn secondary" href="/companies/import">
+            Import CSV
+          </Link>
+          <Link className="btn" href="/companies/new">
+            Add company
+          </Link>
+        </div>
       </div>
       <form className="row-actions" style={{ marginBottom: "1rem" }}>
         <select name="status" defaultValue={params.status ?? ""}>

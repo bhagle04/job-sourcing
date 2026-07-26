@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { parseCompaniesCsv } from "@/lib/csv";
 import { companySchema, emptyToNull, parseSectors } from "@/lib/validators";
 
 export async function createCompany(formData: FormData) {
@@ -99,4 +100,53 @@ export async function rejectSuggestedCompany(id: string) {
   });
   revalidatePath("/companies");
   revalidatePath("/home");
+}
+
+export async function importCompaniesCsv(formData: FormData) {
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    throw new Error("CSV file required");
+  }
+  const text = await file.text();
+  const { rows, errors } = parseCompaniesCsv(text);
+
+  let created = 0;
+  let updated = 0;
+
+  for (const row of rows) {
+    const existing = await prisma.company.findFirst({
+      where: { name: { equals: row.name, mode: "insensitive" } },
+    });
+
+    const data = {
+      name: row.name,
+      stage: row.stage || null,
+      sectors: row.sectors,
+      careersUrl: row.careersUrl || null,
+      websiteUrl: row.websiteUrl || null,
+      whyInteresting: row.whyInteresting || null,
+      notes: row.notes || null,
+      status: row.status,
+    };
+
+    if (existing) {
+      await prisma.company.update({
+        where: { id: existing.id },
+        data,
+      });
+      updated += 1;
+    } else {
+      await prisma.company.create({
+        data: {
+          ...data,
+          source: "seeded",
+          approvedAt: new Date(),
+        },
+      });
+      created += 1;
+    }
+  }
+
+  revalidatePath("/companies");
+  return { created, updated, skippedErrors: errors };
 }
